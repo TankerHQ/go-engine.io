@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/googollee/go-engine.io/message"
-	"github.com/googollee/go-engine.io/parser"
-	"github.com/googollee/go-engine.io/transport"
+	"github.com/TankerHQ/go-engine.io/message"
+	"github.com/TankerHQ/go-engine.io/parser"
+	"github.com/TankerHQ/go-engine.io/transport"
 )
 
 type state int
