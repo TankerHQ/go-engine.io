@@ -373,6 +373,10 @@ func (c *serverConn) pingLoop() {
 		now := time.Now()
 		pingDiff := now.Sub(lastPing)
 		tryDiff := now.Sub(lastTry)
+
+		timerPingInterval := time.NewTimer(c.pingInterval - tryDiff)
+		timerPingTimeout := time.NewTimer(c.pingTimeout - pingDiff)
+
 		select {
 		case ok := <-c.pingChan:
 			if !ok {
@@ -380,7 +384,7 @@ func (c *serverConn) pingLoop() {
 			}
 			lastPing = time.Now()
 			lastTry = lastPing
-		case <-time.After(c.pingInterval - tryDiff):
+		case <-timerPingInterval.C:
 			c.writerLocker.Lock()
 			if w, _ := c.getCurrent().NextWriter(message.MessageText, parser.PING); w != nil {
 				writer := newConnWriter(w, &c.writerLocker)
@@ -389,9 +393,12 @@ func (c *serverConn) pingLoop() {
 				c.writerLocker.Unlock()
 			}
 			lastTry = time.Now()
-		case <-time.After(c.pingTimeout - pingDiff):
+		case <-timerPingTimeout.C:
 			c.Close()
 			return
 		}
+
+		timerPingInterval.Stop()
+		timerPingTimeout.Stop()
 	}
 }
